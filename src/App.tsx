@@ -175,7 +175,7 @@ export default function App() {
               <div className="relative aspect-[16/10] lg:aspect-auto lg:h-full min-h-[300px] w-full overflow-hidden rounded-lg border border-[#E4E4E0] bg-[#EAEAE6]">
                 {!heroImgError ? (
                   <img
-                    src="/src/assets/images/hero_professor_righthand_1795159324302.jpg"
+                    src="/src/assets/images/hero_professor_fringe_1795163126657.jpg"
                     alt="Professor PR delivering a strategy seminar in Singapore"
                     referrerPolicy="no-referrer"
                     onError={() => setHeroImgError(true)}
