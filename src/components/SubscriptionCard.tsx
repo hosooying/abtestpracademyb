@@ -228,13 +228,22 @@ export function SubscriptionCard({
               onHighlightPlan();
               onSelectPlan(plan, selectedUnits);
             }}
-            className={`w-full rounded-md px-3 lg:px-5 py-3 text-xs lg:text-sm font-medium transition-colors cursor-pointer whitespace-nowrap truncate focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9F1239] ${
-              isSelected
-                ? 'bg-[#9F1239] text-white hover:bg-[#881337]'
-                : 'bg-[#141413] text-white hover:bg-[#292524]'
+            className={`inline-flex w-full items-center justify-center gap-1.5 rounded-md px-3 lg:px-5 py-3 text-xs lg:text-sm font-medium transition-colors cursor-pointer whitespace-nowrap truncate focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9F1239] ${
+              isInBag
+                ? 'bg-[#15803D] text-white hover:bg-[#166534]'
+                : isSelected
+                  ? 'bg-[#9F1239] text-white hover:bg-[#881337]'
+                  : 'bg-[#141413] text-white hover:bg-[#292524]'
             }`}
           >
-            {isInBag ? `Added to Bag · ${plan.name}` : `Select ${plan.name}`}
+            {isInBag ? (
+              <>
+                <Check className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span className="truncate">Added to Bag · {plan.name}</span>
+              </>
+            ) : (
+              `Select ${plan.name}`
+            )}
           </button>
           {isInBag && (
             <div className="mt-2 text-center">
