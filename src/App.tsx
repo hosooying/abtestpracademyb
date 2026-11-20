@@ -1,5 +1,5 @@
 import { ArrowRight, GraduationCap, ShieldCheck } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AccountModal } from './components/AccountModal';
 import { AuthModal } from './components/AuthModal';
 import { CheckoutDrawer } from './components/CheckoutDrawer';
@@ -7,6 +7,7 @@ import { Navbar } from './components/Navbar';
 import { SubscriptionCard } from './components/SubscriptionCard';
 import { SUBSCRIPTION_PLANS, UPCOMING_CLASSES } from './data/academyData';
 import { fetchCatalog, fetchCurrentUser } from './lib/api';
+import { variant, track, consent, setConsent, loadClarity } from './pt';
 import type {
   MasterclassSession,
   PlanId,
@@ -16,6 +17,10 @@ import type {
 } from './types';
 
 export default function App() {
+  const [abVariant] = useState(() => variant());
+  const [consentChoice, setConsentChoice] = useState<'granted' | 'denied' | null>(() => consent());
+  const screenViewTrackedRef = useRef(false);
+
   const [plans, setPlans] = useState<SubscriptionPlan[]>(SUBSCRIPTION_PLANS);
   const [classes, setClasses] = useState<MasterclassSession[]>(UPCOMING_CLASSES);
   const [loading, setLoading] = useState(false);
@@ -73,6 +78,15 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    if (screenViewTrackedRef.current) return;
+    screenViewTrackedRef.current = true;
+    if (consent() === 'granted') {
+      loadClarity();
+    }
+    track('screen_view');
+  }, []);
+
   // Compute dynamic concession rate from checkboxes
   const activeDiscountRate =
     isStudentChecked && isOver40Checked
@@ -95,6 +109,9 @@ export default function App() {
   );
 
   const handleSelectPlan = (plan: SubscriptionPlan, units: number) => {
+    if (plan.id === 'annual') {
+      track('cta_click');
+    }
     setHighlightedPlanId(plan.id);
     setSelectedUnitsByPlan((prev) => ({ ...prev, [plan.id]: units }));
     setBagPlanId(plan.id);
@@ -329,6 +346,7 @@ export default function App() {
                       discountRate={activeDiscountRate}
                       isSelected={highlightedPlanId === plan.id}
                       isInBag={bagPlanId === plan.id}
+                      showBestValue={abVariant === 'B'}
                     />
                   ))}
                 </div>
@@ -461,7 +479,11 @@ export default function App() {
       </main>
 
       {/* Quiet Editorial Footer */}
-      <footer className="border-t border-[#E4E4E0] bg-white py-10">
+      <footer
+        className={`border-t border-[#E4E4E0] bg-white py-10 ${
+          consentChoice === null ? 'pb-32 sm:pb-24' : ''
+        }`}
+      >
         <div className="mx-auto flex max-w-[1200px] flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-6 text-xs text-[#78716C]">
           <div>
             <span className="font-display text-sm font-semibold text-[#141413]">PR Academy</span>
@@ -537,9 +559,48 @@ export default function App() {
         }}
         onOrderConfirmed={(newOrder) => {
           setOrders((prev) => [newOrder, ...prev]);
+          if (newOrder.planId === 'annual') {
+            track('goal_complete');
+          }
         }}
         onViewAccount={() => setAccountOpen(true)}
       />
+
+      {/* Analytics Consent Notice */}
+      {consentChoice === null && (
+        <aside
+          aria-label="Analytics consent notice"
+          className="fixed inset-x-0 bottom-0 z-50 border-t border-[#D6D3D1] bg-white/95 backdrop-blur-sm shadow-[0_-8px_24px_rgba(20,20,19,0.08)]"
+        >
+          <div className="mx-auto flex max-w-[1200px] flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-6 py-4">
+            <p className="text-xs sm:text-sm leading-relaxed text-[#292524]">
+              This class prototype records which version you saw and what you pressed, to test a design. Nothing about your visit leaves this browser unless you agree.
+            </p>
+            <div className="flex shrink-0 items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setConsent('granted');
+                  setConsentChoice('granted');
+                }}
+                className="min-w-[112px] rounded-md border border-[#141413] bg-[#141413] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#292524] transition-colors cursor-pointer"
+              >
+                Accept
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setConsent('denied');
+                  setConsentChoice('denied');
+                }}
+                className="min-w-[112px] rounded-md border border-[#141413] bg-[#141413] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#292524] transition-colors cursor-pointer"
+              >
+                Decline
+              </button>
+            </div>
+          </div>
+        </aside>
+      )}
     </div>
   );
 }

@@ -12,6 +12,7 @@ interface SubscriptionCardProps {
   discountRate: number;
   isSelected?: boolean;
   isInBag?: boolean;
+  showBestValue?: boolean;
 }
 
 export function SubscriptionCard({
@@ -24,6 +25,7 @@ export function SubscriptionCard({
   discountRate,
   isSelected = false,
   isInBag = false,
+  showBestValue = false,
 }: SubscriptionCardProps) {
   const standardTotal = plan.unitPrice * selectedUnits;
   const discountedUnitPrice = Math.round(plan.unitPrice * (1 - discountRate) * 100) / 100;
@@ -46,7 +48,7 @@ export function SubscriptionCard({
           : 'border border-[#E4E4E0] bg-white hover:border-[#A8A29E]'
       }`}
     >
-      {plan.id === 'annual' && (
+      {showBestValue && plan.id === 'annual' && (
         <div className="bg-[#9F1239] px-4 py-1.5 text-center text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
           Best Value
         </div>
