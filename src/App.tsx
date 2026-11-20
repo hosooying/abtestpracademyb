@@ -98,7 +98,6 @@ export default function App() {
     setHighlightedPlanId(plan.id);
     setSelectedUnitsByPlan((prev) => ({ ...prev, [plan.id]: units }));
     setBagPlanId(plan.id);
-    setDrawerOpen(true);
   };
 
   const activeBagPlan = plans.find((p) => p.id === bagPlanId) || null;
@@ -326,8 +325,10 @@ export default function App() {
                       }
                       onSelectPlan={handleSelectPlan}
                       onHighlightPlan={() => setHighlightedPlanId(plan.id)}
+                      onOpenBag={() => setDrawerOpen(true)}
                       discountRate={activeDiscountRate}
                       isSelected={highlightedPlanId === plan.id}
+                      isInBag={bagPlanId === plan.id}
                     />
                   ))}
                 </div>
